@@ -1,11 +1,20 @@
 #include "main.h"
+#include "pros/misc.h"
+#include "pros/motors.hpp"
+#include <string>
+#include <vector>
+#include <math.h>
+#include <string>
+// #include "okapi/api.hpp"
+// #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
+// using namespace okapi;
 
 /**
  * A callback function for LLEMU's center button.
  *
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
- */
+ *
 void on_center_button() {
 	static bool pressed = false;
 	pressed = !pressed;
@@ -25,8 +34,6 @@ void on_center_button() {
 void initialize() {
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
-
-	pros::lcd::register_btn1_cb(on_center_button);
 }
 
 /**
@@ -58,36 +65,124 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+// 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
+// 			.withMotors(1,-10,-12,13)  // front right and back right were reversed in order to go forward   
+// 			// change P then D first then I only if necessary  
+// 			//start with P I and D with zero 
+// 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
+// 				{1.0E-3, 0, 0}, // Distance controller gains 
+// 				{0.005, 0, 0}, // turn controller gains
+// 				{0.001, 0, 0.0000}	// Angle controller (helps bot drive straight)
+// 				)
+// 			.withMaxVelocity(115)
+// 			// Green gearset, 3 inch wheel diam, 9 inch wheel track
+// 			.withDimensions(AbstractMotor::gearset::green, {{4_in, 10_in}, imev5GreenTPR})
+// 			.build();
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
+// pros::lcd::set_text(1, "THIS IS AUTON!");
+// bot->moveDistance(10_ft);  
+// bot->turnAngle(90_deg);
+// bot->moveDistance(74_in); 
+// bot->turnAngle(90_deg);
+// bot->moveDistance(10_ft);
+// bot->turnAngle(90_deg);
+// bot->moveDistance(74_in); 
+
+
+}
+
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::MotorGroup left_mg({1,-2,3}); // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-	pros::MotorGroup right_mg({-4,5,-6}); // Creates a motor group with forwards port 4 and reversed ports 4 & 6
 
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0); // Prints status of the emulated screen LCDs
-						 
-		// Arcade control scheme
-		int dir = master.get_analog(ANALOG_LEFT_Y); // Gets amount forward/backward from left joystick
-		int turn = master.get_analog(ANALOG_RIGHT_X); // Gets the turn left/right from right joystick
-		left_mg = dir - turn; // Sets left motor voltage
-		right_mg = dir + turn; // Sets right motor voltage
-		pros::delay(20); // Run for 20 ms then update
+	pros::Motor topLeft(6, false);
+	pros::Motor topRight(2, true);
+	pros::Motor bottRight(12, false);
+	pros::Motor bottLeft(11, true);
+	pros::Motor Arm(19, false);
+	pros::Motor Intake(20, false);
+	pros::ADIDigitalOut piston('B');
+
+
+int yMotion;
+int xMotion;
+int ArmVoltage = 30;
+	
+	while (true)
+	{
+
+		pros::lcd::set_text(1, std::to_string(topLeft.get_position()));
+		pros::lcd::set_text(2, std::to_string(topRight.get_position()));
+		pros::lcd::set_text(3, std::to_string(bottLeft.get_position()));
+		pros::lcd::set_text(4, std::to_string(bottRight.get_position()));
+		pros::lcd::set_text(5, std::to_string(Arm.get_position()));
+		pros::lcd::set_text(5, std::to_string(Intake.get_position()));
+		
+
+
+		pros::Controller master(pros::E_CONTROLLER_MASTER);
+		// driving control code
+
+		yMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // ik this looks wrong, but it works
+		xMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+		
+
+
+		int right = -xMotion + yMotion; //-power + turn
+		int left = xMotion + yMotion;	// power + turn
+
+		topLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
+		bottLeft.move(-left);
+		bottRight.move(right);
+		topRight.move(-right);
+	
+
+	// if(master.get_digital(DIGITAL_L1))
+	// {
+	// 	Arm.move_velocity(50);
+
+	// }
+	// else if(master.get_digital(DIGITAL_L2))
+	// {
+	// 	Arm.move_velocity(-50);
+
+	// }
+	// else{
+	// 	Arm.move_velocity(0);
+	// }
+
+    Arm.move_velocity(-50);
+    pros::delay(500);
+
+	if(master.get_digital(DIGITAL_R2))
+		{
+			Intake.move_velocity(115);
+
+		}
+	else if (master.get_digital(DIGITAL_R1))
+		{
+			Intake.move_velocity(-115);
+
+		}
+	else{
+			Intake.move_velocity(0);
 	}
+
+
+	if (master.get_digital(DIGITAL_A))
+		{
+			piston.set_value(false);
+			pros::delay(500);
+			piston.set_value(true);
+		}
+	else if (master.get_digital(DIGITAL_B))
+	{
+			piston.set_value(false);
+			pros::delay(500);
+	}
+	else{
+		piston.set_value(false);
+	}
+
+}
+
 }
