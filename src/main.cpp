@@ -94,7 +94,6 @@ void autonomous() {
 
 void opcontrol() {
 
-
 	pros::Motor FrontLeft(6, false);
 	pros::Motor FrontRight(2, true);
 	pros::Motor BackRight(12, false);
@@ -105,9 +104,12 @@ void opcontrol() {
 	pros::Motor Elevation(5,false);
 
 
-int yMotion;
-int xMotion;
-int ArmVoltage = 30;
+	int yMotion;
+	int xMotion;
+	int ArmVoltage = 30;
+
+	Arm.move_velocity(-50); // Move arm down at start of program
+	pros::delay(500);
 	
 	while (true)
 	{
@@ -135,8 +137,6 @@ int ArmVoltage = 30;
 		BackRight.move(right);
 		FrontRight.move(-right);
 
-		Arm.move_velocity(-50); // Move arm down at start of program
-		pros::delay(500);
 
 		if(master.get_digital(DIGITAL_R2))
 			{
