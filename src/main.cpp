@@ -94,13 +94,15 @@ void autonomous() {
 
 void opcontrol() {
 
-	pros::Motor topLeft(6, false);
-	pros::Motor topRight(2, true);
-	pros::Motor bottRight(12, false);
-	pros::Motor bottLeft(11, true);
+
+	pros::Motor FrontLeft(6, false);
+	pros::Motor FrontRight(2, true);
+	pros::Motor BackRight(12, false);
+	pros::Motor BackLeft(11, true);
 	pros::Motor Arm(19, false);
 	pros::Motor Intake(20, false);
-	pros::ADIDigitalOut piston('B');
+	pros::ADIDigitalOut Piston('B');
+	pros::Motor Elevation(5,false);
 
 
 int yMotion;
@@ -109,15 +111,14 @@ int ArmVoltage = 30;
 	
 	while (true)
 	{
-
-		pros::lcd::set_text(1, std::to_string(topLeft.get_position()));
-		pros::lcd::set_text(2, std::to_string(topRight.get_position()));
-		pros::lcd::set_text(3, std::to_string(bottLeft.get_position()));
-		pros::lcd::set_text(4, std::to_string(bottRight.get_position()));
-		pros::lcd::set_text(5, std::to_string(Arm.get_position()));
-		pros::lcd::set_text(5, std::to_string(Intake.get_position()));
+		pros::lcd::set_text(1, "READY TO DRIVE");
+		pros::lcd::set_text(2, "Front Left Motor: " + std::to_string(FrontLeft.get_position()));
+		pros::lcd::set_text(3, "Front Right Motor:" + std::to_string(FrontRight.get_position()));
+		pros::lcd::set_text(4, "Back Left Motor:" + std::to_string(BackLeft.get_position()));
+		pros::lcd::set_text(5, "Back Right Motor:" + std::to_string(BackRight.get_position()));
+		pros::lcd::set_text(6, "Arm Motor:" + std::to_string(Arm.get_position()));
+		pros::lcd::set_text(7, "Intake Motor:" + std::to_string(Intake.get_position()));
 		
-
 
 		pros::Controller master(pros::E_CONTROLLER_MASTER);
 		// driving control code
@@ -126,63 +127,52 @@ int ArmVoltage = 30;
 		xMotion = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 		
 
-
 		int right = -xMotion + yMotion; //-power + turn
 		int left = xMotion + yMotion;	// power + turn
 
-		topLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
-		bottLeft.move(-left);
-		bottRight.move(right);
-		topRight.move(-right);
-	
+		FrontLeft.move(left); // Swap negatives if you want the bot to drive in the other direction
+		BackLeft.move(-left);
+		BackRight.move(right);
+		FrontRight.move(-right);
 
-	// if(master.get_digital(DIGITAL_L1))
-	// {
-	// 	Arm.move_velocity(50);
+		Arm.move_velocity(-50); // Move arm down at start of program
+		pros::delay(500);
 
-	// }
-	// else if(master.get_digital(DIGITAL_L2))
-	// {
-	// 	Arm.move_velocity(-50);
+		if(master.get_digital(DIGITAL_R2))
+			{
+				Intake.move_velocity(115);
 
-	// }
-	// else{
-	// 	Arm.move_velocity(0);
-	// }
+			}
+		else if (master.get_digital(DIGITAL_R1))
+			{
+				Intake.move_velocity(-115);
 
-    Arm.move_velocity(-50);
-    pros::delay(500);
+			}
+		else{
+				Intake.move_velocity(0);
+		}
 
-	if(master.get_digital(DIGITAL_R2))
+		if(master.get_digital(DIGITAL_DOWN))
 		{
-			Intake.move_velocity(115);
+			Elevation.move_velocity(50);
+		}
+		else if (master.get_digital(DIGITAL_UP))
+		{
+			Elevation.move_velocity(-50);
+		}
+		else{
+			Elevation.move_velocity(0);
+		}
+
+		if(master.get_digital(DIGITAL_L1))
+		{ 
+			Piston.set_value(false);
 
 		}
-	else if (master.get_digital(DIGITAL_R1))
+		else 
 		{
-			Intake.move_velocity(-115);
-
+			Piston.set_value(true);
 		}
-	else{
-			Intake.move_velocity(0);
 	}
-
-
-	if (master.get_digital(DIGITAL_A))
-		{
-			piston.set_value(false);
-			pros::delay(500);
-			piston.set_value(true);
-		}
-	else if (master.get_digital(DIGITAL_B))
-	{
-			piston.set_value(false);
-			pros::delay(500);
-	}
-	else{
-		piston.set_value(false);
-	}
-
-}
 
 }
