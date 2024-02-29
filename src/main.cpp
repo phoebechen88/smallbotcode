@@ -5,9 +5,9 @@
 #include <vector>
 #include <math.h>
 #include <string>
-// #include "okapi/api.hpp"
-// #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
-// using namespace okapi;
+#include "okapi/api.hpp"
+#include "okapi/api/chassis/controller/chassisControllerPid.hpp"
+using namespace okapi;
 
 /**
  * A callback function for LLEMU's center button.
@@ -66,22 +66,22 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-// 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
-// 			.withMotors(1,-10,-12,13)  // front right and back right were reversed in order to go forward   
-// 			// change P then D first then I only if necessary  
-// 			//start with P I and D with zero 
-// 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
-// 				{1.0E-3, 0, 0}, // Distance controller gains 
-// 				{0.005, 0, 0}, // turn controller gains
-// 				{0.001, 0, 0.0000}	// Angle controller (helps bot drive straight)
-// 				)
-// 			.withMaxVelocity(115)
-// 			// Green gearset, 3 inch wheel diam, 9 inch wheel track
-// 			.withDimensions(AbstractMotor::gearset::green, {{4_in, 10_in}, imev5GreenTPR})
-// 			.build();
+	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
+			.withMotors(1,-10,-12,13)  // front right and back right were reversed in order to go forward   
+			// change P then D first then I only if necessary  
+			//start with P I and D with zero 
+			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
+				{1.0E-3, 0, 0}, // Distance controller gains 
+				{0.005, 0, 0}, // turn controller gains
+				{0.001, 0, 0.0000}	// Angle controller (helps bot drive straight)
+				)
+			.withMaxVelocity(115)
+			// Green gearset, 4 inch wheel diam, 10 inch wheel track
+			.withDimensions(AbstractMotor::gearset::green, {{4_in, 10_in}, imev5GreenTPR})
+			.build();
 
-// pros::lcd::set_text(1, "THIS IS AUTON!");
-// bot->moveDistance(10_ft);  
+pros::lcd::set_text(1, "THIS IS AUTON!");
+bot->moveDistance(1_ft);  
 // bot->turnAngle(90_deg);
 // bot->moveDistance(74_in); 
 // bot->turnAngle(90_deg);
@@ -107,9 +107,7 @@ void opcontrol() {
 	int yMotion;
 	int xMotion;
 	int ArmVoltage = 30;
-
-	Arm.move_velocity(-50); // Move arm down at start of program
-	pros::delay(500);
+	bool pistonOpen = false;
 	
 	while (true)
 	{
@@ -138,40 +136,34 @@ void opcontrol() {
 		FrontRight.move(-right);
 
 
+		// Intake Control
 		if(master.get_digital(DIGITAL_R2))
 			{
 				Intake.move_velocity(115);
-
 			}
 		else if (master.get_digital(DIGITAL_R1))
 			{
 				Intake.move_velocity(-115);
-
 			}
 		else{
 				Intake.move_velocity(0);
 		}
 
-		if(master.get_digital(DIGITAL_DOWN))
-		{
-			Elevation.move_velocity(50);
-		}
-		else if (master.get_digital(DIGITAL_UP))
-		{
-			Elevation.move_velocity(-50);
-		}
-		else{
-			Elevation.move_velocity(0);
-		}
 
-		if(master.get_digital(DIGITAL_L1))
+		// Wings Piston Toggle
+		if(master.get_digital_new_press(DIGITAL_L1))
 		{ 
-			Piston.set_value(false);
-
+            pistonOpen = !pistonOpen; 
+            Piston.set_value(pistonOpen); // Set piston state accordingly
+			pros::delay(20);
 		}
-		else 
+
+
+		// Drop Intake
+		if(master.get_digital(DIGITAL_A))
 		{
-			Piston.set_value(true);
+			Arm.move_velocity(-50); // Move arm down at start of program
+			pros::delay(500);
 		}
 	}
 
