@@ -145,7 +145,8 @@ void opcontrol() {
 			{
 				Intake.move_velocity(-115);
 			}
-		else{
+		else
+		{
 				Intake.move_velocity(0);
 		}
 
@@ -164,6 +165,10 @@ void opcontrol() {
 		{
 			Arm.move_velocity(-50); // Move arm down at start of program
 			pros::delay(500);
+		}
+		else
+		{
+			Arm.move_velocity(0);
 		}
 	}
 
