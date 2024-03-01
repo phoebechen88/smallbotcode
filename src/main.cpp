@@ -67,15 +67,15 @@ void competition_initialize() {}
  */
 void autonomous() {
 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
-			.withMotors(1,-10,-12,13)  // front right and back right were reversed in order to go forward   
+			.withMotors(6,-2,-12,11)  // front right and back right were reversed in order to go forward   
 			// change P then D first then I only if necessary  
 			//start with P I and D with zero 
 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
 				{1.0E-3, 0, 0}, // Distance controller gains 
-				{0.005, 0, 0}, // turn controller gains
+				{0.001, 0, 0}, // turn controller gains
 				{0.001, 0, 0.0000}	// Angle controller (helps bot drive straight)
 				)
-			.withMaxVelocity(115)
+			.withMaxVelocity(200)
 			// Green gearset, 4 inch wheel diam, 10 inch wheel track
 			.withDimensions(AbstractMotor::gearset::green, {{4_in, 10_in}, imev5GreenTPR})
 			.build();
