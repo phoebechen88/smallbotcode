@@ -9,6 +9,10 @@
 #include "okapi/api/chassis/controller/chassisControllerPid.hpp"
 using namespace okapi;
 
+pros::Motor Arm(19, false);
+pros::Motor Intake(20, false);
+pros::ADIDigitalOut Piston('B');
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -72,8 +76,8 @@ void autonomous() {
 			//start with P I and D with zero 
 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
 				{1.0E-3, 0, 0}, // Distance controller gains 
-				{0.001, 0, 0}, // turn controller gains
-				{0.001, 0, 0.0000}	// Angle controller (helps bot drive straight)
+				{0.00075, 0, 0}, // turn controller gains
+				{0.00001, 0, 0.0000}	// Angle controller (helps bot drive straight)
 				)
 			.withMaxVelocity(200)
 			// Green gearset, 4 inch wheel diam, 10 inch wheel track
@@ -81,13 +85,35 @@ void autonomous() {
 			.build();
 
 pros::lcd::set_text(1, "THIS IS AUTON!");
-bot->moveDistance(1_ft);  
-// bot->turnAngle(90_deg);
-// bot->moveDistance(74_in); 
-// bot->turnAngle(90_deg);
-// bot->moveDistance(10_ft);
-// bot->turnAngle(90_deg);
-// bot->moveDistance(74_in); 
+Arm.move_velocity(50); // keep arm up
+
+bot->moveDistance(-13_in); // push red triball backwards
+bot->moveDistance(4.6_in); // move forward to make space
+bot->turnAngle(-98_deg); // turn 1
+bot->moveDistance(34_in); // move forward
+bot->turnAngle(-92_deg); // turn 2
+bot->moveDistance(27.5_in); // move forward to triball
+Arm.move_velocity(-50);
+pros::delay(500); // release arm
+
+Intake.move_velocity(150); // intake triball
+pros::delay(2000);
+
+//Intake.move_velocity(100); // keep intake moving
+
+bot->turnAngle(20_deg); // turn 3
+bot->moveDistance(-4.5_ft); // move backward
+
+bot->turnAngle(-90_deg); // turn 4
+bot->moveDistance(6.25_ft); // move forward
+bot->turnAngle(-94_deg); // turn 5
+bot->moveDistance(4_ft); // move towards goal
+bot->turnAngle(92_deg); // turn 6 (towards goal)
+
+// Piston.set_value(false); // open wings
+// Intake.move_velocity(-150); // push triball out
+// bot->moveDistance(6_in); // drive forward
+// Intake.move_velocity(0); // stop intake
 
 
 }
@@ -101,7 +127,6 @@ void opcontrol() {
 	pros::Motor Arm(19, false);
 	pros::Motor Intake(20, false);
 	pros::ADIDigitalOut Piston('B');
-	pros::Motor Elevation(5,false);
 
 
 	int yMotion;
@@ -139,11 +164,11 @@ void opcontrol() {
 		// Intake Control
 		if(master.get_digital(DIGITAL_R2))
 			{
-				Intake.move_velocity(115);
+				Intake.move_velocity(160);
 			}
 		else if (master.get_digital(DIGITAL_R1))
 			{
-				Intake.move_velocity(-115);
+				Intake.move_velocity(-160);
 			}
 		else
 		{
