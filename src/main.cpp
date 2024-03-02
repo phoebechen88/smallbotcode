@@ -71,12 +71,12 @@ void competition_initialize() {}
  */
 void autonomous() {
 	std::shared_ptr<ChassisController> bot = ChassisControllerBuilder()     
-			.withMotors(6,-2,-12,11)  // front right and back right were reversed in order to go forward   
+			.withMotors(7,-2,-12,11)  // front right and back right were reversed in order to go forward   
 			// change P then D first then I only if necessary  
 			//start with P I and D with zero 
 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
 				{1.0E-3, 0, 0}, // Distance controller gains 
-				{0.00075, 0, 0}, // turn controller gains
+				{0.0005, 0, 0}, // turn controller gains
 				{0.00001, 0, 0.0000}	// Angle controller (helps bot drive straight)
 				)
 			.withMaxVelocity(200)
@@ -87,40 +87,42 @@ void autonomous() {
 pros::lcd::set_text(1, "THIS IS AUTON!");
 Arm.move_velocity(50); // keep arm up
 
-bot->moveDistance(-13_in); // push red triball backwards
-bot->moveDistance(4.6_in); // move forward to make space
-bot->turnAngle(-98_deg); // turn 1
-bot->moveDistance(34_in); // move forward
-bot->turnAngle(-92_deg); // turn 2
+bot->moveDistance(-12.5_in); // push red triball backwards
+bot->moveDistance(4.3_in); // move forward to make space
+bot->turnAngle(-96_deg); // turn 1
+bot->moveDistance(35_in); // move forward
+bot->turnAngle(-93_deg); // turn 2
 bot->moveDistance(27.5_in); // move forward to triball
-Arm.move_velocity(-50);
+Arm.move_velocity(-50);     
 pros::delay(500); // release arm
 
 Intake.move_velocity(150); // intake triball
-pros::delay(2000);
+pros::delay(1000);
 
 //Intake.move_velocity(100); // keep intake moving
 
-bot->turnAngle(20_deg); // turn 3
-bot->moveDistance(-4.5_ft); // move backward
+bot->turnAngle(18_deg); // turn 3
+bot->moveDistance(-4.4_ft); // move backward
 
-bot->turnAngle(-90_deg); // turn 4
-bot->moveDistance(6.25_ft); // move forward
-bot->turnAngle(-94_deg); // turn 5
-bot->moveDistance(4_ft); // move towards goal
-bot->turnAngle(92_deg); // turn 6 (towards goal)
+bot->turnAngle(85_deg); // turn 4
+bot->moveDistance(6_ft); // move forward
+bot->turnAngle(-25_deg); // turn 5
+// bot->moveDistance(2_in); // adjust
+// bot->turnAngle(-70_deg); // turn 6 
+// bot->moveDistance(3_ft); // move to front of goal
+// bot->turnAngle(90_deg); // turn 7
 
-// Piston.set_value(false); // open wings
-// Intake.move_velocity(-150); // push triball out
-// bot->moveDistance(6_in); // drive forward
-// Intake.move_velocity(0); // stop intake
+Piston.set_value(false); // open wings
+Intake.move_velocity(-150); // push triball out
+bot->moveDistance(5_in); // drive forward
+Intake.move_velocity(0); // stop intake
 
 
 }
 
 void opcontrol() {
 
-	pros::Motor FrontLeft(6, false);
+	pros::Motor FrontLeft(7, false);
 	pros::Motor FrontRight(2, true);
 	pros::Motor BackRight(12, false);
 	pros::Motor BackLeft(11, true);
