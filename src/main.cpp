@@ -76,46 +76,83 @@ void autonomous() {
 			//start with P I and D with zero 
 			.withGains( //0.7, 0, 0.1 results: faster, shaking less violently 0//
 				{1.0E-3, 0, 0}, // Distance controller gains 
-				{0.0005, 0, 0}, // turn controller gains
+				{0.0008, 0, 0}, // turn controller gains
 				{0.00001, 0, 0.0000}	// Angle controller (helps bot drive straight)
 				)
-			.withMaxVelocity(200)
+			.withMaxVelocity(150)
 			// Green gearset, 4 inch wheel diam, 10 inch wheel track
 			.withDimensions(AbstractMotor::gearset::green, {{4_in, 10_in}, imev5GreenTPR})
 			.build();
 
 pros::lcd::set_text(1, "THIS IS AUTON!");
+
+bool pistonOpen = true; // closed wings
+Piston.set_value(pistonOpen); // closed wings
+pros::delay(500);
 Arm.move_velocity(50); // keep arm up
 
 bot->moveDistance(-12.5_in); // push red triball backwards
-bot->moveDistance(4.3_in); // move forward to make space
-bot->turnAngle(-96_deg); // turn 1
-bot->moveDistance(35_in); // move forward
-bot->turnAngle(-93_deg); // turn 2
+bot->moveDistance(4.8_in); // move forward to make space
+bot->turnAngle(-102_deg); // turn 1
+bot->moveDistance(35.5_in); // move forward
+bot->turnAngle(-90.5_deg); // turn 2
 bot->moveDistance(27.5_in); // move forward to triball
 Arm.move_velocity(-50);     
 pros::delay(500); // release arm
 
-Intake.move_velocity(150); // intake triball
+Intake.move_velocity(100); // intake triball
 pros::delay(1000);
 
 //Intake.move_velocity(100); // keep intake moving
 
-bot->turnAngle(18_deg); // turn 3
-bot->moveDistance(-4.4_ft); // move backward
+bot->turnAngle(21_deg); // turn 3
+bot->moveDistance(-4.6_ft); // move backward
 
-bot->turnAngle(85_deg); // turn 4
+bot->turnAngle(80_deg); // turn 4
 bot->moveDistance(6_ft); // move forward
-bot->turnAngle(-25_deg); // turn 5
-// bot->moveDistance(2_in); // adjust
-// bot->turnAngle(-70_deg); // turn 6 
-// bot->moveDistance(3_ft); // move to front of goal
-// bot->turnAngle(90_deg); // turn 7
+bot->turnAngle(-40_deg); // turn 5
+bot->moveDistance(4_in); // adjust
+bot->turnAngle(-65_deg); // turn 6 
+bot->moveDistance(3.1_ft);
+pistonOpen = !pistonOpen; 
+Piston.set_value(pistonOpen); // open wings
+bot->moveDistance(1.4_ft); // move to front of goal
+bot->turnAngle(95_deg); // turn 7
+// bot->moveDistance(-8_in);
 
-Piston.set_value(false); // open wings
-Intake.move_velocity(-150); // push triball out
-bot->moveDistance(5_in); // drive forward
+Intake.move_velocity(-200); // push triball out
+pros::delay(500);
+bot->moveDistance(16_in); // drive forward into goal
+// Intake.move_velocity(-200);
+pros::delay(800);
 Intake.move_velocity(0); // stop intake
+pistonOpen = !pistonOpen; 
+Piston.set_value(pistonOpen); // close wings
+// bot->moveDistance(6_in);
+bot->moveDistance(-10.5_in); // back up from goal
+bot->turnAngle(-90_deg);
+bot->moveDistance(5.1_ft);
+bot->turnAngle(-88_deg);
+bot->moveDistance(2.25_ft);
+pros::delay(500);
+Intake.move_velocity(100);
+bot->moveDistance(10_in);
+
+bot->moveDistance(-4_ft);
+bot->turnAngle(-75_deg);
+pistonOpen = !pistonOpen; 
+Piston.set_value(pistonOpen); // open wings
+bot->moveDistance(3_ft);
+bot->turnAngle(100_deg);
+bot->moveDistance(1_ft);
+
+Intake.move_velocity(-200); // push triball out
+pros::delay(500);
+bot->moveDistance(16_in); // drive forward into goal
+// Intake.move_velocity(-200);
+pros::delay(800);
+Intake.move_velocity(0);
+
 
 
 }
@@ -134,7 +171,7 @@ void opcontrol() {
 	int yMotion;
 	int xMotion;
 	int ArmVoltage = 30;
-	bool pistonOpen = false;
+	bool pistonOpen = true;
 	
 	while (true)
 	{
